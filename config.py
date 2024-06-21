@@ -1,0 +1,1 @@
+CHAT_DATABASE_NAME = "chat.db"

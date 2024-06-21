@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Local Chat</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css" />
+  </head>
+  <body>
+    <div id="chatroom">
+      <h2>Chat</h2>
+      <div id="messages">
+        {% for message in messages %}
+        <div>
+          <span><strong>{{ message[1] }}</strong> [{{ message[0] }}]:</span>
+          <span>{{ message[2] }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button id="sendMessageBtn" onclick="sendMessage()">Send</button>
+      <button onclick="clearChat()">Clear Chat</button>
+    </div>
+    <script src="/static/chat.js"></script>
+    <script src="/static/utils.js"></script>
+  </body>
+</html>
