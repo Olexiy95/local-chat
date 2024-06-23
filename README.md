@@ -9,6 +9,11 @@ This is a simple chat application built with FastAPI and SQLite that can be used
 - Persistent chat history using SQLite
 - Clear chat history functionality
 
+
+## Design Decisions (ongoing)
+- Full sized UUIDs for users, obviously...
+- Shorter (10 character) alphanumeric IDs with upper and lower for messages to reduce storage overhead. Calculated to be about 130m records for 1 collision.
+
 ## Installation and Setup
 
 ### 1. Create and Activate a Virtual Environment
