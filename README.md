@@ -12,7 +12,7 @@ This is a simple chat application built with FastAPI and SQLite that can be used
 
 ## Design Decisions (ongoing)
 - Full sized UUIDs for users, obviously...
-- Shorter (10 character) alphanumeric IDs with upper and lower for messages to reduce storage overhead. Calculated to be about 130m records for 1 collision.
+- Shorter (10 character) alphanumeric IDs with upper and lower for messages to reduce storage overhead. Calculated to be about 130m records for 1% collision.
 
 ## Installation and Setup
 

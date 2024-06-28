@@ -28,6 +28,8 @@ class DatabaseManager:
             "INSERT INTO messages (id, user_id, content) VALUES (?, ?, ?)",
             (message_id, user_id, content),
         )
+        self.conn.commit()
+        self.conn.close()
 
     def get_last_message(self, user_id):
         self.cur.execute(
@@ -41,11 +43,19 @@ class DatabaseManager:
                         """,
                         (user_id,),
                     )
-        return self.cur.fetchone()
+        last_message = self.cur.fetchone()
+        self.conn.commit()
+        self.conn.close()
+        return last_message
+
 
     def get_chat(self):
         self.cur.execute("SELECT * FROM chat")
-        return self.cur.fetchall()
+        chat = self.cur.fetchall()
+        self.conn.commit()
+        self.conn.close()
+        return chat
+
 
 
 def get_db(db_name=CHAT_DATABASE_NAME):

@@ -38,21 +38,12 @@ body {
   flex-direction: column;
 }
 
-#chatroom label {
-  margin-bottom: 5px;
-}
-
+#chatroom label,
 #login label {
   margin-bottom: 5px;
 }
 
-#chatroom input {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
+#chatroom input,
 #login input {
   padding: 10px;
   margin-bottom: 10px;
@@ -60,15 +51,7 @@ body {
   border-radius: 5px;
 }
 
-#chatroom button {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-}
-
+#chatroom button,
 #login button {
   padding: 10px;
   border: none;
@@ -83,10 +66,7 @@ body {
   justify-content: space-between;
 }
 
-#chatroom button:hover {
-  background-color: #0056b3;
-}
-
+#chatroom button:hover,
 #login button:hover {
   background-color: #0056b3;
 }
@@ -96,4 +76,23 @@ body {
   overflow-y: scroll;
   border-bottom: 1px solid #ccc;
   margin-bottom: 10px;
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+#password {
+  width: 100%;
+  padding-right: 30px; /* Adjust based on the icon size */
+  box-sizing: border-box;
+}
+
+#togglePassword {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
 }
