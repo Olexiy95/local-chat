@@ -12,6 +12,9 @@ class DatabaseManager:
         print("DatabaseManager conn:", self.conn)
         self.cur = self.conn.cursor()
 
+    def close(self):
+        self.conn.close()
+
     def insert_user(self, username, password, email, name, bio, profile_picture=None):
         user_id = str(uuid.uuid4())
         self.cur.execute(
@@ -20,42 +23,75 @@ class DatabaseManager:
             (user_id, username, password, email, name, bio, profile_picture),
         )
         self.conn.commit()
-        self.conn.close()
+        # self.conn.close()
+
+    def update_user(
+        self, user_id, username, password, email, name, bio, profile_picture
+    ):
+        if username:
+            self.cur.execute(
+                "UPDATE users SET username = ? WHERE id = ?", (username, user_id)
+            )
+        if password:
+            self.cur.execute(
+                "UPDATE users SET password = ? WHERE id = ?", (password, user_id)
+            )
+        if email:
+            self.cur.execute(
+                "UPDATE users SET email = ? WHERE id = ?", (email, user_id)
+            )
+        if name:
+            self.cur.execute("UPDATE users SET name = ? WHERE id = ?", (name, user_id))
+        if bio:
+            self.cur.execute("UPDATE users SET bio = ? WHERE id = ?", (bio, user_id))
+        if profile_picture:
+            self.cur.execute(
+                "UPDATE users SET profile_picture = ? WHERE id = ?",
+                (profile_picture, user_id),
+            )
+        self.conn.commit()
+        # self.conn.close()
+
+    def get_user(self, user_id):
+        self.cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        user = self.cur.fetchone()
+        self.conn.commit()
+        # self.conn.close()
+        return user
 
     def insert_message(self, user_id, content):
+        print("inserting message")
         message_id = generate_short_id()
         self.cur.execute(
             "INSERT INTO messages (id, user_id, content) VALUES (?, ?, ?)",
             (message_id, user_id, content),
         )
         self.conn.commit()
-        self.conn.close()
+        # self.conn.close()
 
     def get_last_message(self, user_id):
         self.cur.execute(
-                        """
-                        SELECT * FROM chat 
-                        WHERE timestamp = (
-                            SELECT MAX(timestamp) 
-                            FROM messages 
-                            WHERE user_id = ?
-                        )
-                        """,
-                        (user_id,),
-                    )
+            """
+                SELECT * FROM chat 
+                WHERE timestamp = (
+                    SELECT MAX(timestamp) 
+                    FROM messages 
+                    WHERE user_id = ?
+                )
+            """,
+            (user_id,),
+        )
         last_message = self.cur.fetchone()
         self.conn.commit()
-        self.conn.close()
+        # self.conn.close()
         return last_message
-
 
     def get_chat(self):
         self.cur.execute("SELECT * FROM chat")
         chat = self.cur.fetchall()
         self.conn.commit()
-        self.conn.close()
+        # self.conn.close()
         return chat
-
 
 
 def get_db(db_name=CHAT_DATABASE_NAME):
@@ -78,7 +114,7 @@ def init_db(db_name=CHAT_DATABASE_NAME):
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             bio TEXT,
-            profile_picture TEXT,
+            profile_picture BLOB,
             is_admin BOOLEAN DEFAULT FALSE
         )
         """

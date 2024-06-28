@@ -12,7 +12,11 @@
   <body>
     <div class="container mt-5">
       <h2>Profile</h2>
-      <form action="/profile" method="post" enctype="multipart/form-data">
+      <form
+        action="/user/{{user[0]}}"
+        method="post"
+        enctype="multipart/form-data"
+      >
         <div class="form-group">
           <label for="name">Name:</label>
           <input
@@ -20,7 +24,7 @@
             class="form-control"
             id="name"
             name="name"
-            value="{{ user[0] }}"
+            value="{{ user[1] }}"
             required
           />
         </div>
@@ -31,7 +35,7 @@
             class="form-control"
             id="username"
             name="username"
-            value="{{ user[1] }}"
+            value="{{ user[2] }}"
             readonly
           />
         </div>
@@ -42,14 +46,14 @@
             class="form-control"
             id="email"
             name="email"
-            value="{{ user[2] }}"
+            value="{{ user[3] }}"
             required
           />
         </div>
         <div class="form-group">
           <label for="bio">Bio:</label>
           <textarea class="form-control" id="bio" name="bio" rows="3">
-            {{ user[3] }}</textarea
+            {{user[5]}}</textarea
           >
         </div>
         <div class="form-group">
@@ -61,10 +65,10 @@
             name="profile_picture"
           />
         </div>
-        {% if user[4] %}
+        {% if user[6] %}
         <div class="form-group">
           <img
-            src="/{{ user[4] }}"
+            src="/{{ user[6] }}"
             alt="Profile Picture"
             class="img-thumbnail"
             width="150"

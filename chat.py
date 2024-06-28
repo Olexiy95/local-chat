@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, WebSocket, Request, Depends
+from fastapi import APIRouter, Cookie, Form, WebSocket, Request, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlite3 import Connection
@@ -13,10 +13,9 @@ manager = ConnectionManager()
 
 db_manager = DatabaseManager(CHAT_DATABASE_NAME)
 
+
 @router.get("/chat")
-async def get_chat(
-        request: Request, user_id: str = Cookie(None)
-):
+async def get_chat(request: Request, user_id: str = Cookie(None)):
     if user_id is None:
         return RedirectResponse(url="/auth/login")
 
@@ -34,11 +33,38 @@ async def clear_chat(db: Connection = Depends(get_db)):
     return JSONResponse(content={"message": "Chat cleared"}, status_code=200)
 
 
+@router.get("/user/{user_id}")
+async def get_profile(request: Request, user_id: str):
+    user = db_manager.get_user(user_id)
+    print("User:", user)
+    if user is None:
+        return JSONResponse(content={"message": "User not found"}, status_code=404)
+    return templates.TemplateResponse(
+        "profile.html", {"request": request, "user": user}
+    )
+
+
+@router.post("/user/{user_id}")
+async def update_user(
+    user_id: str,
+    username: str = Form(None),
+    password: str = Form(None),
+    email: str = Form(None),
+    name: str = Form(None),
+    bio: str = Form(None),
+    profile_picture: bytes = Form(None),
+):
+    db_manager.update_user(
+        user_id, username, password, email, name, bio, profile_picture
+    )
+    return RedirectResponse(url=f"/user/{user_id}", status_code=303)
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(
-        websocket: WebSocket,
-        user_id: str = Cookie(None),
-        db: Connection = Depends(get_db),
+    websocket: WebSocket,
+    user_id: str = Cookie(None),
+    db: Connection = Depends(get_db),
 ):
     await manager.connect(websocket)
     try:
