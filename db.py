@@ -105,49 +105,16 @@ def get_db(db_name=CHAT_DATABASE_NAME):
 def init_db(db_name=CHAT_DATABASE_NAME):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            bio TEXT,
-            profile_picture BLOB,
-            is_admin BOOLEAN DEFAULT FALSE
-        )
-        """
-    )
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            user_id TEXT NOT NULL,
-            content TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-        """
-    )
-
-    cursor.execute(
-        """
-        CREATE VIEW IF NOT EXISTS chat AS SELECT 
-        messages.timestamp, users.username, messages.content
-        FROM messages
-        JOIN users ON messages.user_id = users.id
-        ORDER BY messages.timestamp
-        """
-    )
-    hashed_password = bcrypt.hash("password")
-    cursor.execute(
-        """
-            INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)
-        """,
-        ("admin", hashed_password),
-    )
+    with open("init.sql") as f:
+        cursor.executescript(f.read())
+    # TODO: Add admin user
+    # hashed_password = bcrypt.hash("password")
+    # cursor.execute(
+    #     """
+    #         INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)
+    #     """,
+    #     ("admin", hashed_password),
+    # )
 
     conn.commit()
     conn.close()

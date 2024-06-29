@@ -1,5 +1,16 @@
-from fastapi import APIRouter, Cookie, Form, WebSocket, Request, Depends
-from fastapi.responses import JSONResponse, RedirectResponse
+import base64
+import io
+from fastapi import (
+    APIRouter,
+    Cookie,
+    File,
+    Form,
+    WebSocket,
+    Request,
+    Depends,
+    UploadFile,
+)
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlite3 import Connection
 from db import get_db, DatabaseManager
@@ -36,11 +47,19 @@ async def clear_chat(db: Connection = Depends(get_db)):
 @router.get("/user/{user_id}")
 async def get_profile(request: Request, user_id: str):
     user = db_manager.get_user(user_id)
-    print("User:", user)
+    user_data = list(user)
+    # print("User:", user)
+    profile_picture = user[7]
+    # user_data[5] = user_data[5].strip()
+    if profile_picture:
+        encoded_profile_picture = base64.b64encode(profile_picture).decode("utf-8")
+        user_data[7] = f"data:image/jpeg;base64,{encoded_profile_picture}"
+        print("User:", user[5])
+
     if user is None:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
     return templates.TemplateResponse(
-        "profile.html", {"request": request, "user": user}
+        "profile.html", {"request": request, "user": user_data}
     )
 
 
@@ -52,11 +71,12 @@ async def update_user(
     email: str = Form(None),
     name: str = Form(None),
     bio: str = Form(None),
-    profile_picture: bytes = Form(None),
+    profile_picture: UploadFile = File(None),
 ):
-    db_manager.update_user(
-        user_id, username, password, email, name, bio, profile_picture
-    )
+    if profile_picture:
+        file_content = await profile_picture.read()
+    db_manager.update_user(user_id, username, password, email, name, bio, file_content)
+
     return RedirectResponse(url=f"/user/{user_id}", status_code=303)
 
 
