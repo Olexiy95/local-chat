@@ -13,6 +13,7 @@ This is a simple chat application built with FastAPI and SQLite that can be used
 ## Design Decisions (ongoing)
 - Full sized UUIDs for users, obviously...
 - Shorter (10 character) alphanumeric IDs with upper and lower for messages to reduce storage overhead. Calculated to be about 130m records for 1% collision.
+- Converting timestamps client side since SQLite does nto handle timezones and stores everything in GMT (I think) and inserting dynamically timezoned timestamps on inserts will lead to mismatching so we keep them as is and just convert client side...
 
 ## Installation and Setup
 
