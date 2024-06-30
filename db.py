@@ -7,95 +7,94 @@ from utils import generate_short_id
 
 class DatabaseManager:
     def __init__(self, database_name: str):
+        self.database_name = database_name
         print("DatabaseManager init")
-        self.conn = sqlite3.connect(database_name, check_same_thread=False)
-        print("DatabaseManager conn:", self.conn)
-        self.cur = self.conn.cursor()
+        # self.conn = sqlite3.connect(database_name, check_same_thread=False)
+        print("DatabaseManager conn:")
+        # self.cur = self.conn.cursor()
 
-    def close(self):
-        self.conn.close()
+    def _execute_query(self, query, params=None, commit=False):
+        with sqlite3.connect(self.database_name, check_same_thread=False) as conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute(query, params or ())
+                if commit:
+                    conn.commit()
+                if cursor.description:  # Check if the query returns data
+                    fetched_data = cursor.fetchall()
+                    if len(fetched_data) == 1:
+                        return fetched_data[0]
+                        # return fetched_data
+                    else:
+                        return fetched_data
+            except Exception as e:
+                conn.rollback()
+                print(f"Database error during query execution: {e}")
+                raise e
+
+    # def close(self):
+    #     self.conn.close()
+
+    # def rollback(self):
+    #     self.conn.rollback()
 
     def insert_user(self, username, password, email, name, bio, profile_picture=None):
         user_id = str(uuid.uuid4())
-        self.cur.execute(
-            "INSERT INTO users (id, username, password, email, name, bio, profile_picture) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (user_id, username, password, email, name, bio, profile_picture),
-        )
-        self.conn.commit()
-        # self.conn.close()
+        query = "INSERT INTO users (id, username, password, email, name, bio, profile_picture)"
+        params = (user_id, username, password, email, name, bio, profile_picture)
+        self._execute_query(query, params, commit=True)
 
     def update_user(
         self, user_id, username, password, email, name, bio, profile_picture
     ):
+        updates = []
+        params = []
         if username:
-            self.cur.execute(
-                "UPDATE users SET username = ? WHERE id = ?", (username, user_id)
-            )
+            updates.append("username = ?")
+            params.append(username)
         if password:
-            self.cur.execute(
-                "UPDATE users SET password = ? WHERE id = ?", (password, user_id)
-            )
+            updates.append("password = ?")
+            params.append(password)
         if email:
-            self.cur.execute(
-                "UPDATE users SET email = ? WHERE id = ?", (email, user_id)
-            )
+            updates.append("email = ?")
+            params.append(email)
         if name:
-            self.cur.execute("UPDATE users SET name = ? WHERE id = ?", (name, user_id))
+            updates.append("name = ?")
+            params.append(name)
         if bio:
-            self.cur.execute("UPDATE users SET bio = ? WHERE id = ?", (bio, user_id))
+            updates.append("bio = ?")
+            params.append(bio)
         if profile_picture:
-            self.cur.execute(
-                "UPDATE users SET profile_picture = ? WHERE id = ?",
-                (profile_picture, user_id),
-            )
-        self.conn.commit()
-        # self.conn.close()
+            updates.append("profile_picture = ?")
+            params.append(profile_picture)
+
+        params.append(user_id)
+        query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
+        self._execute_query(query, params, commit=True)
 
     def get_user(self, user_id):
-        self.cur.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-        user = self.cur.fetchone()
-        self.conn.commit()
-        # self.conn.close()
-        return user
+        query = "SELECT * FROM users WHERE id = ?"
+        return self._execute_query(query, (user_id,))
 
     def insert_message(self, user_id, content):
-        print("inserting message")
         message_id = generate_short_id()
-        self.cur.execute(
-            "INSERT INTO messages (id, user_id, content) VALUES (?, ?, ?)",
-            (message_id, user_id, content),
-        )
-        self.conn.commit()
-        # self.conn.close()
+        query = "INSERT INTO messages (id, user_id, content) VALUES (?, ?, ?)"
+        self._execute_query(query, (message_id, user_id, content), commit=True)
 
     def get_last_message(self, user_id):
-        self.cur.execute(
-            """
-                SELECT * FROM chat 
-                WHERE timestamp = (
-                    SELECT MAX(timestamp) 
-                    FROM messages 
-                    WHERE user_id = ?
-                )
-            """,
-            (user_id,),
-        )
-        last_message = self.cur.fetchone()
-        self.conn.commit()
-        # self.conn.close()
-        return last_message
+        query = """
+            SELECT * FROM chat WHERE timestamp = (
+                SELECT MAX(timestamp) FROM messages WHERE user_id = ?
+            )
+        """
+        return self._execute_query(query, (user_id,))
 
     def get_chat(self):
-        self.cur.execute("SELECT * FROM chat")
-        chat = self.cur.fetchall()
-        self.conn.commit()
-        # self.conn.close()
-        return chat
+        return self._execute_query("SELECT * FROM chat")
 
 
-def get_db(db_name=CHAT_DATABASE_NAME):
-    conn = sqlite3.connect(db_name, check_same_thread=False)
+def get_db():
+    conn = sqlite3.connect(CHAT_DATABASE_NAME, check_same_thread=False)
     try:
         yield conn
     finally:
@@ -115,6 +114,5 @@ def init_db(db_name=CHAT_DATABASE_NAME):
     #     """,
     #     ("admin", hashed_password),
     # )
-
     conn.commit()
     conn.close()

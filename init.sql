@@ -25,7 +25,7 @@ SELECT
     messages.timestamp,
     users.username,
     messages.content,
-    user.id
+    users.id
 FROM
     messages
     JOIN users ON messages.user_id = users.id

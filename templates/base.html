@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}Local Chat{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Chat</h1>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      {% block content %}{% endblock %}
+      <footer>
+        <p>© 2024</p>
+      </footer>
+    </div>
+    <script src="/static/chat.js"></script>
+    <script src="/static/utils.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

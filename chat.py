@@ -5,6 +5,7 @@ from fastapi import (
     Cookie,
     File,
     Form,
+    HTTPException,
     WebSocket,
     Request,
     Depends,
@@ -29,8 +30,15 @@ db_manager = DatabaseManager(CHAT_DATABASE_NAME)
 async def get_chat(request: Request, user_id: str = Cookie(None)):
     if user_id is None:
         return RedirectResponse(url="/auth/login")
+    try:
+        messages = db_manager.get_chat()
+        print("Messages received")
+    except Exception as e:
+        print(f"Error retrieving chat messages: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    # finally:
+    #     db_manager.close()
 
-    messages = db_manager.get_chat()
     return templates.TemplateResponse(
         "index.html", {"request": request, "messages": messages}
     )
@@ -48,13 +56,10 @@ async def clear_chat(db: Connection = Depends(get_db)):
 async def get_profile(request: Request, user_id: str):
     user = db_manager.get_user(user_id)
     user_data = list(user)
-    # print("User:", user)
-    profile_picture = user[7]
-    # user_data[5] = user_data[5].strip()
+    profile_picture = user[6]
     if profile_picture:
         encoded_profile_picture = base64.b64encode(profile_picture).decode("utf-8")
-        user_data[7] = f"data:image/jpeg;base64,{encoded_profile_picture}"
-        print("User:", user[5])
+        user_data[6] = f"data:image/jpeg;base64,{encoded_profile_picture}"
 
     if user is None:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
@@ -84,7 +89,6 @@ async def update_user(
 async def websocket_endpoint(
     websocket: WebSocket,
     user_id: str = Cookie(None),
-    db: Connection = Depends(get_db),
 ):
     await manager.connect(websocket)
     try:
@@ -98,44 +102,22 @@ async def websocket_endpoint(
                 try:
                     db_manager.insert_message(user_id, text_data)
                     inserted_message = db_manager.get_last_message(user_id)
-                    print("Inserted message:", inserted_message, user_id)
-                    # inserted_message_json = {
-                    #     "content": inserted_message[2],
-                    #     "username": inserted_message[1],
-                    #     "timestamp": inserted_message[0],
-                    # }
+                    print("Inserted message:", inserted_message)
                     inserted_message_json = {
                         "content": inserted_message[2],
                         "username": inserted_message[1],
                         "timestamp": inserted_message[0],
+                        "user_id": inserted_message[3],
                     }
+                    print("Inserted message JSON:", inserted_message_json)
 
                 except Exception as e:
-                    db.rollback()
                     print(f"Error during insert or query: {e}")
                     continue
 
                 await manager.broadcast_json(inserted_message_json)
-                # elif data["type"] == "websocket.receive" and data.get("bytes") is not None:
-                #     binary_data = data["bytes"]
-                #     print("Binary data received:", binary_data)
-                #     cursor = db.cursor()
-                #     cursor.execute(
-                #         "INSERT INTO voice_messages (content) VALUES (?)", (binary_data,)
-                #     )
-                #     db.commit()
-
-                #     # Get the last inserted row for the voice message
-                #     cursor.execute(
-                #         "SELECT * FROM voice_messages WHERE id = last_insert_rowid()"
-                #     )
-                #     inserted_voice_message = cursor.fetchone()
-
-                #     # Send the inserted voice message back to the client
-                #     await websocket.send_text("New voice message received")
-
-                # await manager.broadcast_string("New voice message received")
     except Exception as e:
         print(f"Error: {e}")
     finally:
         manager.disconnect(websocket)
+        # db_manager.close()
