@@ -1,33 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>{% block title %}Local Chat{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Default Title{% endblock %}</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
+    <link rel="stylesheet" href="/static/styles.css" />
+
+    {% block additional_css %}{% endblock %}
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>Chat</h1>
-        <nav>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/logout">Logout</a></li>
+    <header>
+      <!-- Navigation and header content here -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Local Chat</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mr-auto">
+            <!-- mr-auto pushes following elements to the right -->
+            <li class="nav-item active">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/profile">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/users">Users</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/channels">Channels</a>
+            </li>
           </ul>
-        </nav>
-      </header>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="" onclick="logout()">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
 
-      {% block content %}{% endblock %}
-      <footer>
-        <p>© 2024</p>
-      </footer>
+    <div class="main-body d-flex">
+      <div class="sidebar bg-light">
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="#">Link 1</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Link 2</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Link 3</a></li>
+          <!-- Add more sidebar items here -->
+        </ul>
+      </div>
+      <div class="container mt-5">{% block content %}{% endblock %}</div>
     </div>
+
+    {% block scripts %}{% endblock %}
     <script src="/static/chat.js"></script>
     <script src="/static/utils.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>

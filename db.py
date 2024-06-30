@@ -15,6 +15,7 @@ class DatabaseManager:
 
     def _execute_query(self, query, params=None, commit=False):
         with sqlite3.connect(self.database_name, check_same_thread=False) as conn:
+            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             try:
                 cursor.execute(query, params or ())
@@ -23,15 +24,34 @@ class DatabaseManager:
                 if cursor.description:  # Check if the query returns data
                     fetched_data = cursor.fetchall()
                     if len(fetched_data) == 1:
-                        return fetched_data[0]
+                        return [dict(row) for row in fetched_data][0]
                         # return fetched_data
                     else:
-                        return fetched_data
+                        return [dict(row) for row in fetched_data]
             except Exception as e:
                 conn.rollback()
                 print(f"Database error during query execution: {e}")
                 raise e
 
+    # def _execute_query(self, query, params=None, commit=False):
+    #     with sqlite3.connect(self.database_name, check_same_thread=False) as conn:
+    #         # Set the row factory to sqlite3.Row
+    #         conn.row_factory = sqlite3.Row
+
+    #         cursor = conn.cursor()
+    #         try:
+    #             cursor.execute(query, params or ())
+    #             if commit:
+    #                 conn.commit()
+    #             if cursor.description:  # Check if the query returns data
+    #                 fetched_data = cursor.fetchall()
+    #                 # Convert fetched rows to dictionaries if there is data
+    #                 if fetched_data:
+    #                     return [dict(row) for row in fetched_data]
+    #         except Exception as e:
+    #             conn.rollback()
+    #             print(f"Database error during query execution: {e}")
+    #             raise e
     # def close(self):
     #     self.conn.close()
 

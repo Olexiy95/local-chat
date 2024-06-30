@@ -1,22 +1,44 @@
 {% extends "base.html" %} {% block title %} Local Chat {% endblock %} {% block
 content %}
-<div id="chatroom">
-  <h2>Chat</h2>
+
+<div id="chatroom" class="container">
+  <h2>Chat Channel</h2>
   <div id="messages">
     {% for message in messages %}
     <div>
-      <span
-        ><strong><a href="/user/{{ message[3] }}">{{ message[1] }}</a></strong
-        >[{{ message[0] }}]:</span
-      >
-      <span>{{ message[2] }}</span>
+      <!-- Store the UTC timestamp in a data-attribute for easy access by JS -->
+      <span class="timestamp" data-utc="{{ message['timestamp'] }}">
+        [{{ message['timestamp'] }}]
+        <!-- This will be replaced by JS -->
+      </span>
+      <strong>
+        <a href="/user/{{ message['id'] }}"> {{ message['username'] }} </a>
+      </strong>
+      : {{ message['content' ]}}
     </div>
     {% endfor %}
   </div>
-  <input type="text" id="messageInput" placeholder="Type a message..." />
-  <button id="sendMessageBtn" onclick="sendMessage()">Send</button>
-  <button onclick="clearChat()">Clear Chat</button>
+
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      id="messageInput"
+      placeholder="Type a message..."
+      aria-label="Message Input"
+      aria-describedby="button-addon"
+    />
+    <div class="input-group-append">
+      <button
+        id="sendMessageBtn"
+        onclick="sendMessage()"
+        class="btn btn-primary"
+        type="button"
+      >
+        Send
+      </button>
+    </div>
+  </div>
 </div>
-<script src="/static/chat.js"></script>
-<script src="/static/utils.js"></script>
+
 {% endblock %}

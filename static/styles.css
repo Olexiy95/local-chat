@@ -1,86 +1,51 @@
+html,
 body {
-  font-family: Arial, sans-serif;
-  background-color: #928989;
-  display: flex;
-  flex-direction: column; /* Aligns items vertically */
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh; /* Ensures at least full height */
+  height: 100%; /* Full height of the viewport */
   margin: 0;
-  padding: 20px; /* Adds some padding around the content */
-}
-
-.container {
-  /* Wrapper for all content, providing padding */
-  width: calc(100% - 40px); /* Full width minus padding */
-  max-width: 960px; /* Maximum width */
-  display: flex;
-  flex-direction: column; /* Stack vertically */
-  align-items: center; /* Center align the items */
-}
-
-#login,
-#chatroom {
-  width: 300px; /* Equal width for login and chatroom, adjust as needed */
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px; /* Adds space between sections */
-}
-
-#chatroom {
-  width: 500px; /* Larger width for chatroom */
-  height: 500px; /* Make chatroom square */
-}
-
-#login h2,
-#chatroom h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-#login form,
-#chatroom form {
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
 
-#chatroom input[type="text"],
-#login input[type="text"],
-#login input[type="password"] {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-#chatroom button,
-#login button {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  margin-top: 10px; /* Adds margin on top of the button */
-}
-
-#buttons {
+.main-body {
+  flex: 1; /* Fills available space */
   display: flex;
-  justify-content: space-between;
+  overflow: hidden; /* Avoids unnecessary scrolling */
 }
 
-#chatroom button:hover,
-#login button:hover {
-  background-color: #0056b3;
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.container {
+  flex-grow: 1;
+  overflow: hidden; /* Modify if the entire .container should not scroll */
+}
+
+/* Add this in your /static/styles.css or within a <style> block in your base.html */
+#chatroom {
+  /* height: calc(100vh - 150px); */
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #messages {
-  height: 80%; /* Adjusts height relative to chatroom */
-  border-bottom: 1px solid #ccc;
-  margin-bottom: 10px;
-  overflow-y: scroll;
-  scroll-behavior: smooth;
+  flex-grow: 1;
+  overflow-y: auto; /* Makes only the messages part scrollable */
+  padding: 15px;
+  border: 1px solid #ccc; /* Just for visual delineation */
+}
+
+.input-group {
+  margin-top: 10px; /* Ensures input group is always at the bottom of the chatroom */
+}
+
+footer {
+  width: 100%;
+  flex-shrink: 0;
+  text-align: center;
+  padding: 10px 0;
 }

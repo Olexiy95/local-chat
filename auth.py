@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, Depends, Request
+from fastapi import APIRouter, Form, Depends, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from passlib.hash import bcrypt
@@ -11,6 +11,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 db_manager = DatabaseManager(CHAT_DATABASE_NAME)
+
 
 @router.get("/login")
 async def login_form(request: Request):
@@ -34,9 +35,7 @@ async def login(
         print("Stored password:", stored_password)
         if bcrypt.verify(password, stored_password):
             response = RedirectResponse(url="/chat", status_code=303)
-            response.set_cookie(
-                key="user_id", value=user_id, httponly=True
-            )
+            response.set_cookie(key="user_id", value=user_id, httponly=True)
             return response
     return HTMLResponse(content="Invalid username or password", status_code=400)
 
@@ -44,6 +43,13 @@ async def login(
 @router.get("/signup")
 async def signup_form(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
+
+
+@router.get("/logout")
+async def logout(response: Response):
+    # Command the browser to delete the cookie by setting its expiration date to the past
+    response.delete_cookie(key="user_id", path="/")
+    return {"message": "Logout successful"}
 
 
 @router.post("/signup")

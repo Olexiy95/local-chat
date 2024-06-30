@@ -15,7 +15,6 @@ app.include_router(chat_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# db_connection = next(get_db(CHAT_DATABASE_NAME))
 init_db(CHAT_DATABASE_NAME)
 
 

@@ -16,7 +16,6 @@ from fastapi.templating import Jinja2Templates
 from sqlite3 import Connection
 from db import get_db, DatabaseManager
 from classes import ConnectionManager
-from models import Message
 from config import CHAT_DATABASE_NAME
 
 router = APIRouter()
@@ -32,7 +31,8 @@ async def get_chat(request: Request, user_id: str = Cookie(None)):
         return RedirectResponse(url="/auth/login")
     try:
         messages = db_manager.get_chat()
-        print("Messages received")
+
+        print("Messages received", messages[0])
     except Exception as e:
         print(f"Error retrieving chat messages: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -55,17 +55,24 @@ async def clear_chat(db: Connection = Depends(get_db)):
 @router.get("/user/{user_id}")
 async def get_profile(request: Request, user_id: str):
     user = db_manager.get_user(user_id)
-    user_data = list(user)
-    profile_picture = user[6]
+
+    profile_picture = user["profile_picture"]
     if profile_picture:
         encoded_profile_picture = base64.b64encode(profile_picture).decode("utf-8")
-        user_data[6] = f"data:image/jpeg;base64,{encoded_profile_picture}"
+        user["profile_picture"] = f"data:image/jpeg;base64,{encoded_profile_picture}"
 
     if user is None:
         return JSONResponse(content={"message": "User not found"}, status_code=404)
     return templates.TemplateResponse(
-        "profile.html", {"request": request, "user": user_data}
+        "profile.html", {"request": request, "user": user}
     )
+
+
+@router.get("/profile")
+async def get_profile(user_id: str = Cookie(None)):
+    if user_id is None:
+        return RedirectResponse(url="/auth/login")
+    return RedirectResponse(url=f"/user/{user_id}", status_code=303)
 
 
 @router.post("/user/{user_id}")
@@ -97,25 +104,23 @@ async def websocket_endpoint(
             print("Raw data received:", data)
             if data["type"] == "websocket.receive" and data.get("text") is not None:
                 text_data = data["text"]
-                # cursor = db.cursor()
-                # cursor.execute("BEGIN")
                 try:
                     db_manager.insert_message(user_id, text_data)
                     inserted_message = db_manager.get_last_message(user_id)
                     print("Inserted message:", inserted_message)
-                    inserted_message_json = {
-                        "content": inserted_message[2],
-                        "username": inserted_message[1],
-                        "timestamp": inserted_message[0],
-                        "user_id": inserted_message[3],
-                    }
-                    print("Inserted message JSON:", inserted_message_json)
+                    # inserted_message_json = {
+                    #     "content": inserted_message[2],
+                    #     "username": inserted_message[1],
+                    #     "timestamp": inserted_message[0],
+                    #     "user_id": inserted_message[3],
+                    # }
+                    # print("Inserted message JSON:", inserted_message_json)
 
                 except Exception as e:
                     print(f"Error during insert or query: {e}")
                     continue
 
-                await manager.broadcast_json(inserted_message_json)
+                await manager.broadcast_json(inserted_message)
     except Exception as e:
         print(f"Error: {e}")
     finally:

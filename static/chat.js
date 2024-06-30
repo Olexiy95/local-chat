@@ -4,19 +4,35 @@ socket.onmessage = function (event) {
   console.log("Message received: " + event.data);
   var messageData = JSON.parse(event.data);
   console.log("Message data: " + messageData);
-  const user_id = messageData.user_id;
-  console.log("user_id: " + user_id);
+
   var messagesContainer = document.getElementById("messages");
   var messageElement = document.createElement("div");
   messageElement.innerHTML = `
   <div>
-    <span><strong> <a href="/user/${messageData["user_id"]}"> ${messageData.username} </a></strong> [${messageData.timestamp}]:</span>
+    [${convertToLocaleString(messageData.timestamp)}]
+    <span><strong> <a href="/user/${messageData["id"]}"> ${
+    messageData.username
+  } </a></strong>: </span>
     <span>${messageData.content}</span>
   </div>
 `;
   messagesContainer.appendChild(messageElement);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 };
+
+function convertToLocaleString(utcString) {
+  const date = new Date(utcString + "Z");
+  return date.toLocaleString();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const timestamps = document.querySelectorAll(".timestamp");
+  timestamps.forEach((element) => {
+    const utcTime = element.getAttribute("data-utc");
+    const localTime = new Date(utcTime + "Z").toLocaleString();
+    element.textContent = `[${localTime}]`;
+  });
+});
 
 window.addEventListener("load", function () {
   updateScroll();

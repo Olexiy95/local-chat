@@ -23,3 +23,14 @@ icon.addEventListener("click", function () {
     icon.classList.remove("fa-eye-slash");
   }
 });
+
+function logout() {
+  fetch("/auth/logout", { method: "GET" })
+    .then((response) => {
+      // Check if the response is okay
+      if (response.ok) {
+        window.location.href = "/";
+      }
+    })
+    .catch((error) => console.error("Error:", error));
+}
